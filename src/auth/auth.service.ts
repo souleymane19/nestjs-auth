@@ -3,6 +3,7 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { UserService } from 'src/user/user.service';
 import { JwtService } from "@nestjs/jwt";
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -31,7 +32,10 @@ export class AuthService {
   }
   async signIn(username: string, pass: string): Promise<any> {
     const user = await this.userService.findOne(username);
-    if (user?.name !== pass) {
+    
+    const isMatch = await bcrypt.compare(pass, user.password);
+
+    if (isMatch) {
       throw new UnauthorizedException();
     }
     const payload = { sub: user.id, username: user.email };
